@@ -438,7 +438,7 @@ async function run() {
         }
     });
 
-    // 2️⃣ Get a specific forum post by ID 
+    // 2️⃣ Get a specific forum post by ID
     app.get("/threads/:id", async (req, res) => {
         const { id } = req.params;
         try {
@@ -496,7 +496,6 @@ async function run() {
             const thread = await threadsCollection.findOne({
                 _id: new ObjectId(threadId),
             });
-            console.log(thread);
             if (!thread) {
                 return res.status(404).json({ message: "Thread not found" });
             }
@@ -523,7 +522,6 @@ async function run() {
                 { _id: new ObjectId(threadId) },
                 updateQuery
             );
-            console.log("Update result:", result);
 
             if (result.modifiedCount === 0) {
                 return res.status(400).json({ message: "Update failed" });
@@ -534,8 +532,6 @@ async function run() {
                 _id: new ObjectId(threadId),
             });
 
-            console.log(updatedThread);
-
             res.json({
                 success: true,
                 liked: !hasLiked,
@@ -544,6 +540,23 @@ async function run() {
         } catch (error) {
             console.error("Error toggling like:", error);
             res.status(500).json({ message: "Server error" });
+        }
+    });
+
+    //!  Comment database
+    app.patch("/threads/comment/:id", async (req, res) => {
+        const { id } = req.params;
+        const { newComment } = req.body;
+
+        const result = await threadsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $push: { comments: newComment } }
+        );
+
+        if (result.modifiedCount > 0) {
+            res.send({ success: true });
+        } else {
+            res.send({ success: false });
         }
     });
 
