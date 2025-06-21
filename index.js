@@ -560,6 +560,21 @@ async function run() {
         }
     });
 
+     const groomingCollection = client.db("petVerse").collection("grooming");
+
+        // Get all grooming services
+        app.get("/grooming", async (req, res) => {
+            const result = await groomingCollection.find().toArray();
+            res.send(result);
+        });
+
+        // Post a new grooming appointment
+        app.post("/grooming/appointment", async (req, res) => {
+            const groomingService = req.body;
+            const result = await groomingCollection.insertOne(groomingService);
+            res.send(result);
+        });
+
     // Payment request
     const paymentCollection = client.db("mediCamp").collection("payments");
     app.get("/payment/:id", verifyToken, async (req, res) => {
