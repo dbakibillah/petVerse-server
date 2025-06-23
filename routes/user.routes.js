@@ -17,6 +17,15 @@ router.get("/user", async (req, res) => {
     res.json({ exists: !!user });
 });
 
+router.get("/singleuser", async (req, res) => {
+    const { email } = req.query;
+    const user = await userCollection.findOne({ email });
+    return res.status(200).json({
+        success: true,
+        data: user,
+    });
+});
+
 router.post("/users", async (req, res) => {
     const user = req.body;
     const result = await userCollection.insertOne(user);
