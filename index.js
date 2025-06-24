@@ -21,8 +21,8 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            // "https://project-petverse.netlify.app",
-            // "https://petverse-8f5b7.web.app",
+            "https://project-petverse.netlify.app",
+            "https://petverse-8f5b7.web.app",
         ],
         credentials: true,
     })
