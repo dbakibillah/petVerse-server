@@ -35,7 +35,7 @@ router.post("/grooming", validateStatus, async (req, res) => {
             "phone",
             "address",
             "petType",
-            "breed",  // Fixed typo (was "breed")
+            "breed", // Fixed typo (was "breed")
         ];
         const missingFields = requiredFields.filter(
             (field) => !appointment[field]
@@ -63,6 +63,71 @@ router.post("/grooming", validateStatus, async (req, res) => {
         res.status(500).json({ error: "Failed to create appointment" });
     }
 });
+
+//! Create new grooming appointment (POST /grooming/appointment)
+router.post("/grooming/appointment", async (req, res) => {
+    try {
+        const groomingData = req.body;
+
+        // Updated validation to match frontend fields
+        const requiredFields = [
+            "petName",
+            "petType",
+            "phone",
+            "address",
+            "friendly",
+            "trained",
+            "vaccinated",
+            "pickupTime",
+            "deliveryTime",
+        ];
+
+        const missingFields = requiredFields.filter((field) => {
+            // Check if field is missing or empty string
+            return (
+                groomingData[field] === undefined || groomingData[field] === ""
+            );
+        });
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({
+                error: "Missing required fields",
+                missingFields,
+                message: `Please provide: ${missingFields.join(", ")}`,
+            });
+        }
+
+        // Set default status if not provided
+        groomingData.status = groomingData.status || "pending";
+
+        // Add timestamps
+        groomingData.createdAt = new Date();
+        groomingData.updatedAt = new Date();
+
+        // Insert the new appointment
+        const result = await groomingCollection.insertOne(groomingData);
+
+        if (result.insertedId) {
+            res.status(201).json({
+                message: "Appointment created successfully",
+                insertedId: result.insertedId,
+                appointment: groomingData,
+            });
+        } else {
+            res.status(500).json({
+                error: "Failed to create appointment",
+                details: "Database operation failed",
+            });
+        }
+    } catch (error) {
+        console.error("Error creating appointment:", error);
+        res.status(500).json({
+            error: "Internal server error",
+            details: error.message,
+        });
+    }
+});
+
 // Get all grooming appointments (GET /grooming)
 router.get("/grooming", async (req, res) => {
     try {
