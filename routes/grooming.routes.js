@@ -68,35 +68,6 @@ router.post("/grooming", validateStatus, async (req, res) => {
 router.post("/grooming/appointment", async (req, res) => {
     try {
         const groomingData = req.body;
-        console.log("Received grooming data:", groomingData);
-
-        // Updated validation to match frontend fields
-        const requiredFields = [
-            "petName",
-            "petType",
-            "phone",
-            "address",
-            "friendly",
-            "trained",
-            "vaccinated",
-            "pickupTime",
-            "deliveryTime",
-        ];
-
-        const missingFields = requiredFields.filter((field) => {
-            // Check if field is missing or empty string
-            return (
-                groomingData[field] === undefined || groomingData[field] === ""
-            );
-        });
-
-        if (missingFields.length > 0) {
-            return res.status(400).json({
-                error: "Missing required fields",
-                missingFields,
-                message: `Please provide: ${missingFields.join(", ")}`,
-            });
-        }
 
         // Set default status if not provided
         groomingData.status = groomingData.status || "pending";
@@ -105,21 +76,19 @@ router.post("/grooming/appointment", async (req, res) => {
         groomingData.createdAt = new Date();
         groomingData.updatedAt = new Date();
 
+        console.log(
+            "Creating new grooming appointment with data:",
+            groomingData
+        );
         // Insert the new appointment
         const result = await groomingCollection.insertOne(groomingData);
 
-        if (result.insertedId) {
-            res.status(201).json({
-                message: "Appointment created successfully",
-                insertedId: result.insertedId,
-                appointment: groomingData,
-            });
-        } else {
-            res.status(500).json({
-                error: "Failed to create appointment",
-                details: "Database operation failed",
-            });
-        }
+        // Return the response with insertedId and the data
+        res.status(201).json({
+            _id: result.insertedId,
+            ...groomingData,
+        });
+
     } catch (error) {
         console.error("Error creating appointment:", error);
         res.status(500).json({
@@ -128,7 +97,6 @@ router.post("/grooming/appointment", async (req, res) => {
         });
     }
 });
-
 // Get all grooming appointments (GET /grooming)
 router.get("/grooming", async (req, res) => {
     try {
