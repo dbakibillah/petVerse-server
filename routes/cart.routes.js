@@ -6,6 +6,16 @@ const { client } = require("../config/db");
 //! cart database
 const cartCollection = client.db("petVerse").collection("carts");
 
+router.get("/allcarts", async (req, res) => {
+    try {
+        const result = await cartCollection.find({}).toArray();
+        res.json(result);
+    } catch (error) {
+        console.error("Error fetching forum posts:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 // 1️⃣ CREATE CART
 router.post("/carts", async (req, res) => {
     const { cartData } = req.body;

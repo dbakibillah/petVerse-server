@@ -12,6 +12,8 @@ const productRoutes = require("./routes/product.routes");
 const cartRoutes = require("./routes/cart.routes");
 const threadRoutes = require("./routes/thread.routes");
 const groomingRoutes = require("./routes/grooming.routes");
+const healthcareRoutes = require("./routes/healthcare.routes");
+const paymentRoutes = require("./routes/payment.routes");
 
 // Import database connection
 const { connectToDatabase } = require("./config/db");
@@ -42,6 +44,9 @@ app.use("/", productRoutes);
 app.use("/", cartRoutes);
 app.use("/", threadRoutes);
 app.use("/", groomingRoutes);
+app.use("/", healthcareRoutes);
+app.use("/", paymentRoutes);
+
 
 // Connect to database and start server
 connectToDatabase()

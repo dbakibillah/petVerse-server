@@ -3,14 +3,21 @@ const router = express.Router();
 const { ObjectId } = require("mongodb");
 const { client } = require("../config/db");
 
-//! Database collection
-const groomingCollection = client.db("petVerse").collection("grooming");
+// Database collection
+const healthcareCollection = client.db("petVerse").collection("healthcare");
 
 // Status validation middleware
 const validateStatus = (req, res, next) => {
-    const validStatuses = ["pending", "Confirmed", "Completed", "Cancelled"];
-    if (req.body.status && !validStatuses.includes(req.body.status)) {
-        return res.status(400).json({ error: "Invalid status value" });
+    const validStatuses = ["pending", "confirmed", "completed", "cancelled"];
+    if (
+        req.body.status &&
+        !validStatuses.includes(req.body.status.toLowerCase())
+    ) {
+        return res.status(400).json({
+            error: "Invalid status value",
+            validStatuses,
+            received: req.body.status,
+        });
     }
     next();
 };
@@ -23,8 +30,7 @@ const validateObjectId = (req, res, next) => {
     next();
 };
 
-// Create a new grooming appointment (POST /grooming)
-router.post("/grooming", validateStatus, async (req, res) => {
+router.post("/healthcare", validateStatus, async (req, res) => {
     try {
         const appointment = req.body;
 
@@ -53,7 +59,7 @@ router.post("/grooming", validateStatus, async (req, res) => {
         appointment.createdAt = new Date();
         appointment.updatedAt = new Date();
 
-        const result = await groomingCollection.insertOne(appointment);
+        const result = await healthcareCollection.insertOne(appointment);
         res.status(201).json({
             _id: result.insertedId,
             ...appointment,
@@ -64,11 +70,11 @@ router.post("/grooming", validateStatus, async (req, res) => {
     }
 });
 
-//! Create new grooming appointment (POST /grooming/appointment)
-router.post("/grooming/appointment", async (req, res) => {
+// Create a new healthcare appointment (POST /healthcare)
+router.post("/healthcare/appointment", async (req, res) => {
     try {
-        const groomingData = req.body;
-        console.log("Received grooming data:", groomingData);
+        console.log("Received healthcare appointment data:", req.body);
+        const healthCareData = req.body;
 
         // Updated validation to match frontend fields
         const requiredFields = [
@@ -80,13 +86,14 @@ router.post("/grooming/appointment", async (req, res) => {
             "trained",
             "vaccinated",
             "pickupTime",
-            "deliveryTime",
+            "deliveryTime", // Note: This matches the frontend's spelling
         ];
 
         const missingFields = requiredFields.filter((field) => {
             // Check if field is missing or empty string
             return (
-                groomingData[field] === undefined || groomingData[field] === ""
+                healthCareData[field] === undefined ||
+                healthCareData[field] === ""
             );
         });
 
@@ -99,20 +106,24 @@ router.post("/grooming/appointment", async (req, res) => {
         }
 
         // Set default status if not provided
-        groomingData.status = groomingData.status || "pending";
+        healthCareData.status = healthCareData.status || "pending";
+
+        // Add owner information from the frontend
+        healthCareData.ownerName = healthCareData.ownerName || "Anonymous";
+        healthCareData.ownerEmail = healthCareData.ownerEmail || "Anonymous";
 
         // Add timestamps
-        groomingData.createdAt = new Date();
-        groomingData.updatedAt = new Date();
+        healthCareData.createdAt = new Date();
+        healthCareData.updatedAt = new Date();
 
         // Insert the new appointment
-        const result = await groomingCollection.insertOne(groomingData);
+        const result = await healthcareCollection.insertOne(healthCareData);
 
         if (result.insertedId) {
             res.status(201).json({
                 message: "Appointment created successfully",
                 insertedId: result.insertedId,
-                appointment: groomingData,
+                appointment: healthCareData,
             });
         } else {
             res.status(500).json({
@@ -129,10 +140,10 @@ router.post("/grooming/appointment", async (req, res) => {
     }
 });
 
-// Get all grooming appointments (GET /grooming)
-router.get("/grooming", async (req, res) => {
+// Get all healthcare appointments (GET /healthcare)
+router.get("/healthcare", async (req, res) => {
     try {
-        const appointments = await groomingCollection
+        const appointments = await healthcareCollection
             .find()
             .sort({ createdAt: -1 })
             .toArray();
@@ -143,9 +154,9 @@ router.get("/grooming", async (req, res) => {
     }
 });
 
-// Update appointment status (PATCH /grooming/:id)
+// Update appointment status (PATCH /healthcare/:id)
 router.patch(
-    "/grooming/:id",
+    "/healthcare/:id",
     validateObjectId,
     validateStatus,
     async (req, res) => {
@@ -158,7 +169,7 @@ router.patch(
                 },
             };
 
-            const result = await groomingCollection.updateOne(
+            const result = await healthcareCollection.updateOne(
                 { _id: new ObjectId(req.params.id) },
                 updateDoc
             );
@@ -178,9 +189,9 @@ router.patch(
     }
 );
 
-// Update entire appointment (PUT /grooming/:id)
+// Update entire appointment (PUT /healthcare/:id)
 router.put(
-    "/grooming/:id",
+    "/healthcare/:id",
     validateObjectId,
     validateStatus,
     async (req, res) => {
@@ -220,7 +231,7 @@ router.put(
                 },
             };
 
-            const result = await groomingCollection.updateOne(
+            const result = await healthcareCollection.updateOne(
                 { _id: new ObjectId(req.params.id) },
                 updateDoc
             );
@@ -240,10 +251,10 @@ router.put(
     }
 );
 
-// Delete appointment (DELETE /grooming/:id)
-router.delete("/grooming/:id", validateObjectId, async (req, res) => {
+// Delete appointment (DELETE /healthcare/:id)
+router.delete("/healthcare/:id", validateObjectId, async (req, res) => {
     try {
-        const result = await groomingCollection.deleteOne({
+        const result = await healthcareCollection.deleteOne({
             _id: new ObjectId(req.params.id),
         });
 
