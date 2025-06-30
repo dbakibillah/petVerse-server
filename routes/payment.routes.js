@@ -20,9 +20,9 @@ router.post("/order", async (req, res) => {
         total_amount: orderData?.totalAmount, // Number of items in the cart
         currency: "BDT",
         tran_id: transanctionId, // use unique tran_id for each api call
-        success_url: "http://localhost:5173/",
-        fail_url: "http://localhost:3030/fail",
-        cancel_url: "http://localhost:3030/cancel",
+        success_url: "https://project-petverse.netlify.app/shop",
+        fail_url: "https://project-petverse.netlify.app/shop",
+        cancel_url: "https://project-petverse.netlify.app/shop",
         ipn_url: "http://localhost:3030/ipn",
         shipping_method: "Courier",
         product_name: "PetVerse Order",

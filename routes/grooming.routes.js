@@ -70,16 +70,12 @@ router.post("/grooming/appointment", async (req, res) => {
         const groomingData = req.body;
 
         // Set default status if not provided
-        groomingData.status = groomingData.status || "pending";
+        groomingData.status = "pending";
 
         // Add timestamps
         groomingData.createdAt = new Date();
         groomingData.updatedAt = new Date();
 
-        console.log(
-            "Creating new grooming appointment with data:",
-            groomingData
-        );
         // Insert the new appointment
         const result = await groomingCollection.insertOne(groomingData);
 
