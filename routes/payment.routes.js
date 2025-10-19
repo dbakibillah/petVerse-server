@@ -73,4 +73,14 @@ router.get("/orders", async (req, res) => {
     }
 });
 
+// get all orders for a specific user
+router.get("/my-orders", async (req, res) => {
+    const { email } = req.query;
+    const orders = await orderCollection
+        .find({ userEmail: email })
+        .sort({ createdAt: -1 })
+        .toArray();
+    res.status(200).json(orders);
+});
+
 module.exports = router;

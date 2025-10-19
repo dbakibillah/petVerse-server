@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { ObjectId } = require("mongodb");
 const { client } = require("../config/db");
+const verifyToken = require("../middleware/verifyToken");
 
 //! Database collection
 const groomingCollection = client.db("petVerse").collection("grooming");
@@ -84,7 +85,6 @@ router.post("/grooming/appointment", async (req, res) => {
             _id: result.insertedId,
             ...groomingData,
         });
-
     } catch (error) {
         console.error("Error creating appointment:", error);
         res.status(500).json({
@@ -93,6 +93,17 @@ router.post("/grooming/appointment", async (req, res) => {
         });
     }
 });
+
+// Get grooming appointment by user email
+router.get("/grooming", verifyToken, async (req, res) => {
+    const { email } = req.query;
+    const appointments = await groomingCollection
+        .find({ userEmail: email })
+        .sort({ createdAt: -1 })
+        .toArray();
+    res.status(200).json(appointments);
+});
+
 // Get all grooming appointments (GET /grooming)
 router.get("/grooming", async (req, res) => {
     try {
