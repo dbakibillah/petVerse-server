@@ -105,7 +105,7 @@ router.get("/grooming", verifyToken, async (req, res) => {
 });
 
 // Get all grooming appointments (GET /grooming)
-router.get("/grooming", async (req, res) => {
+router.get("/all-grooming", async (req, res) => {
     try {
         const appointments = await groomingCollection
             .find()
